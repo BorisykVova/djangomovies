@@ -1,0 +1,17 @@
+# Created by .ignore support plugin (hsz.mobi)
+.idea/.gitignore
+.idea/codeStyles/
+.idea/dataSources.xml
+.idea/dbnavigator.xml
+.idea/dictionaries/
+.idea/djangomovies.iml
+.idea/inspectionProfiles/
+.idea/misc.xml
+.idea/modules.xml
+.idea
+db.sqlite3
+#djangomovies/
+#manage.py
+#movies/
+#templates/
+venv/
