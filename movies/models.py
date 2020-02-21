@@ -120,7 +120,7 @@ class Rating(models.Model):
 
     # Foreign key
     start = models.ForeignKey(RatingStart, on_delete=models.CASCADE, verbose_name='start')
-    movie = models.ForeignKey(Movie, on_delete=models.CharField, verbose_name='movie')
+    movie = models.ForeignKey(Movie, on_delete=models.CASCADE, verbose_name='movie')
 
     def __str__(self):
         return f'{self.start} - {self.movie}'
