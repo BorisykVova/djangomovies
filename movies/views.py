@@ -8,13 +8,12 @@ class MovieViews(ListView):
 
     model = Movie
     queryset = Movie.objects.filter(draft=False)
-    template_name = 'movies/movies.html'
-    context_object_name = 'movies_list'
+    template_name = 'movies/movie_list.html'
 
 
-class MovieDescriptionViews(DetailView):
+class MovieDetailViews(DetailView):
     """Render full description of movie"""
 
     model = Movie
     slug_field = 'url'
-    template_name = 'movies/movie_description.html'
+    template_name = 'movies/movie_detail.html'
