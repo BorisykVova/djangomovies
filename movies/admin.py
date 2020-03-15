@@ -1,4 +1,4 @@
-from .models import Category, Genre, Movie, MovieShots, Actor, RatingStart, Rating, Reviews
+from .models import Category, Genre, Movie, MoviesShots, Actor, RatingStart, Rating, Reviews
 
 from django.contrib import admin
 
@@ -7,7 +7,7 @@ from django.contrib import admin
 admin.site.register(Category)
 admin.site.register(Genre)
 admin.site.register(Movie)
-admin.site.register(MovieShots)
+admin.site.register(MoviesShots)
 admin.site.register(Actor)
 admin.site.register(RatingStart)
 admin.site.register(Rating)

@@ -88,7 +88,7 @@ class Movie(models.Model):
         verbose_name_plural = 'Movies'
 
 
-class MovieShots(models.Model):
+class MoviesShots(models.Model):
     """Movie footage"""
 
     title = models.CharField('Title', max_length=100)
