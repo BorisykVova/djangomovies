@@ -1,10 +1,24 @@
 from typing import List, Tuple, Optional
 
+from django import forms
+from django.contrib import admin
+from django.db.models import QuerySet
+from django.utils.safestring import mark_safe
+from django.core.handlers.wsgi import WSGIRequest
+from ckeditor_uploader.widgets import CKEditorUploadingWidget
+
 from .models import Category, Genre, Movie, MoviesShots, Actor, RatingStart, Rating, Reviews
 
-from django.contrib import admin
 
 # Register your models here.
+
+
+class MovieAdminForm(forms.ModelForm):
+    description = forms.CharField(widget=CKEditorUploadingWidget(), label='Description')
+
+    class Meta:
+        model = Movie
+        fields = '__all__'
 
 
 READONLY_FIELDS = (
@@ -14,6 +28,18 @@ READONLY_FIELDS = (
     'parent',
     'movie',
 )
+
+
+class ObjImageShow:
+    def get_image(self, obj):
+        if isinstance(obj, Movie):
+            src = obj.poster.url
+        else:
+            src = obj.image.url
+
+        return mark_safe(f'<img src={src} width="100" height="90">')
+
+    get_image.short_description = 'Image'
 
 
 def group_fields(fields: Tuple[str, ...], title: str = None,
@@ -43,13 +69,37 @@ class ReviewInlines(admin.TabularInline):
     readonly_fields = READONLY_FIELDS
 
 
+class MovieShotsInlines(admin.TabularInline, ObjImageShow):
+    model = MoviesShots
+    extra = 1
+
+    readonly_fields = (
+        'get_image',
+    )
+
+
 @admin.register(Movie)
-class MovieAdmin(admin.ModelAdmin):
+class MovieAdmin(admin.ModelAdmin, ObjImageShow):
+    save_on_top = True
+    save_as = True
+    form = MovieAdminForm
+
+    inlines = (
+        MovieShotsInlines,
+        ReviewInlines,
+    )
+
+    actions = (
+        'publish',
+        'unpublish',
+    )
+
     list_display = (
         'title',
         'category',
         'url',
         'draft',
+        'get_image',
     )
     list_display_links = (
         'title',
@@ -63,11 +113,12 @@ class MovieAdmin(admin.ModelAdmin):
         'title',
         'category__name',
     )
-    inlines = [ReviewInlines]
-    save_on_top = True
-    save_as = True
+
     list_editable = (
         'draft',
+    )
+    readonly_fields = (
+        'get_image',
     )
     fieldsets = (
         group_fields(
@@ -75,7 +126,11 @@ class MovieAdmin(admin.ModelAdmin):
             group=True,
         ),
         group_fields(
-            ('description', 'poster'),
+            ('description', ),
+        ),
+        group_fields(
+            ('poster', 'get_image'),
+            group=True
         ),
         group_fields(
             ('year', 'country', 'word_premiere'),
@@ -97,6 +152,36 @@ class MovieAdmin(admin.ModelAdmin):
             ('url', 'draft'),
             group=True,
         ),
+    )
+
+    def unpublish(self, request: WSGIRequest, queryset: QuerySet):
+        """Unpublish this movie"""
+        row_update = queryset.update(draft=True)
+        if row_update == 1:
+            message_bit = '1 row was unpublished.'
+        else:
+            message_bit = f'{row_update} rows were unpublished.'
+
+        self.message_user(request, message_bit)
+
+    def publish(self, request: WSGIRequest, queryset: QuerySet):
+        """Publish this movie"""
+        row_update = queryset.update(draft=False)
+        if row_update == 1:
+            message_bit = '1 row was published.'
+        else:
+            message_bit = f'{row_update} rows were published.'
+
+        self.message_user(request, message_bit)
+
+    publish.short_description = 'Publish'
+    publish.allowed_permission = (
+        'change',
+    )
+
+    unpublish.short_description = 'Unpublish'
+    unpublish.allowed_permission = (
+        'change',
     )
 
 
@@ -124,27 +209,33 @@ class GenreAdmin(admin.ModelAdmin):
 
 
 @admin.register(MoviesShots)
-class MoviesShotsAdmin(admin.ModelAdmin):
+class MoviesShotsAdmin(admin.ModelAdmin, ObjImageShow):
     list_display = (
         'title',
         'movie',
-        'image',
-        'description',
+        'get_image',
     )
     list_display_links = (
         'title',
+    )
+
+    readonly_fields = (
+        'get_image',
     )
 
 
 @admin.register(Actor)
-class ActorMovies(admin.ModelAdmin):
+class ActorMovies(admin.ModelAdmin, ObjImageShow):
     list_display = (
         'name',
         'age',
-        'image',
+        'get_image',
     )
     list_display_links = (
         'name',
+    )
+    readonly_fields = (
+        'get_image',
     )
 
 
@@ -163,3 +254,7 @@ class RatingAdmin(admin.ModelAdmin):
         'start',
         'movie',
     )
+
+
+admin.site.site_title = 'Django Movies'
+admin.site.site_header = 'Django Movies'
